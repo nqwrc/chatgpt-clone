@@ -1,10 +1,16 @@
 # ChatGPT-clone
-Build Your own ChatGPT with OpenAI API and Streamlit
+Build Your own ChatGPT with [revChatGPT](https://github.com/acheong08/ChatGPT) and [Streamlit](https://github.com/streamlit/streamlit)
 
-- Get your OpenAI API key here - https://beta.openai.com/account/api-keys
-- Replace that key in the `config.py` code
+- Get your access token from - https://chat.openai.com/api/auth/session
+- Replace that in the file `chatgpt.py`, inside the config variable
+```python
+config = {
+    "Authorization": "<leave this as whatever - it will get replaced>",
+    "access_token": "YOUR_TOKEN_HERE",
+}
+```
 - Install the required libraries `pip install -r requirements.txt`
-- Run `streamlit run chatgpt.py`
+- Run `python -m streamlit run chatgpt.py`
 
 
 ## Quick Demo: 
