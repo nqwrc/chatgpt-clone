@@ -1,13 +1,11 @@
-import os
-
 import streamlit as st
 from revChatGPT.V1 import Chatbot
 from streamlit_chat import message
 
-# Set up chatbot : https://chat.openai.com/api/auth/session
+# Get it from : https://chat.openai.com/api/auth/session
 config = {
     "Authorization": "<leave this as whatever - it will get replaced>",
-    "access_token": os.environ.get("CHATGPT_ACCESS_TOKEN"),
+    "access_token": "YOUR_TOKEN_HERE",
 }
 # Initialize chatbot
 chatbot = Chatbot(config, conversation_id=None)
