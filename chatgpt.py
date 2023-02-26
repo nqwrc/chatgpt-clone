@@ -1,74 +1,61 @@
+import os
+
 import streamlit as st
+from revChatGPT.V1 import Chatbot
 from streamlit_chat import message
 
-import openai
-from config import open_api_key
-openai.api_key = open_api_key
+# Set up chatbot : https://chat.openai.com/api/auth/session
+config = {
+    "Authorization": "<leave this as whatever - it will get replaced>",
+    "access_token": os.environ.get("CHATGPT_ACCESS_TOKEN"),
+}
+# Initialize chatbot
+chatbot = Chatbot(config, conversation_id=None)
 
-# openAI code
+# Define functions
+def update_history(prompt):
+    response = ''
+    for data in chatbot.ask(prompt):
+        response = data["message"]
+    print(response)
+    return response 
 
-
-def openai_create(prompt):
-
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=prompt,
-        temperature=0.9,
-        max_tokens=150,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0.6,
-        stop=[" Human:", " AI:"]
-    )
-
-    return response.choices[0].text
-
-
-def chatgpt_clone(input, history):
+def generate_response(prompt, history):
     history = history or []
-    s = list(sum(history, ()))
+    s = ' '.join(sum(history, ()))
     print(s)
-    s.append(input)
-    inp = ' '.join(s)
-    output = openai_create(inp)
-    history.append((input, output))
+    output = update_history(f'{s} {prompt}')
+    history.append(output)
     return history, history
 
+def main():
+    # Set up Streamlit app
+    st.set_page_config(
+        page_title="Streamlit Chat - Demo",
+        page_icon=":robot:"
+    )
+    st.header("ChatGPT Clone")
 
-# Streamlit App
-st.set_page_config(
-    page_title="Streamlit Chat - Demo",
-    page_icon=":robot:"
-)
+    history_input = []
 
-st.header("ChatGPT Clone with Streamlit")
+    # Initialize session state
+    st.session_state.setdefault('generated', [])
+    st.session_state.setdefault('past', [])
 
-history_input = []
+    # Get user input
+    user_input = st.text_input("You: ", key="input")
 
-if 'generated' not in st.session_state:
-    st.session_state['generated'] = []
+    # Generate and display responses
+    if user_input:
+        output = generate_response(user_input, history_input)
+        history_input.append([user_input, output])
+        st.session_state.past.append(user_input)
+        st.session_state.generated.append(output[0])
+        
+    # Display past messages
+    for i, (gen, past) in enumerate(zip(reversed(st.session_state.generated), reversed(st.session_state.past))): 
+        message(gen, key=str(i))
+        message(past, is_user=True, key=f'{i}_user')
 
-if 'past' not in st.session_state:
-    st.session_state['past'] = []
-
-
-def get_text():
-    input_text = st.text_input("You: ", key="input")
-    return input_text
-
-
-user_input = get_text()
-
-
-if user_input:
-    output = chatgpt_clone(user_input, history_input)
-    history_input.append([user_input, output])
-    st.session_state.past.append(user_input)
-    st.session_state.generated.append(output[0])
-
-if st.session_state['generated']:
-
-    for i in range(len(st.session_state['generated'])-1, -1, -1):
-        message(st.session_state["generated"][i], key=str(i))
-        message(st.session_state['past'][i],
-                is_user=True, key=str(i) + '_user')
+if __name__ == '__main__':
+    main()
